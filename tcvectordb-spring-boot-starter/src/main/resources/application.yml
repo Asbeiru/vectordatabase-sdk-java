@@ -1,0 +1,82 @@
+# 腾讯云向量数据库 Spring Boot 配置模板
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tcvectordb-spring-boot-starter
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 腾讯云向量数据库配置
+tencent:
+  vectordb:
+    # 【必需】向量数据库连接URL
+    # 示例: http://lb-xxxxxxxx-xxxxx.clb.ap-guangzhou.tencentclb.com:xxxx
+    url: ${VECTORDB_URL:http://your-vectordb-url:port}
+
+    # 【必需】API Key用于身份认证
+    # 从腾讯云控制台获取
+    api-key: ${VECTORDB_API_KEY:your-api-key}
+
+    # 用户名,默认为root
+    username: root
+
+    # 连接超时时间(秒)
+    timeout: 30
+
+    # 最大空闲连接数
+    max-idle-connections: 10
+
+    # 数据库名称
+    database-name: excel_docs_db
+
+    # Collection名称
+    collection-name: excel_docs
+
+    # Embedding自动向量化配置
+    embedding:
+      # Embedding模型名称
+      # 支持的模型:
+      #   - bge-base-zh: 中文基础模型,768维
+      #   - m3e-base: 中文模型,768维
+      #   - text2vec-large-chinese: 中文大模型,1024维
+      #   - e5-large-v2: 英文大模型,1024维
+      #   - multilingual-e5-base: 多语言模型,768维
+      model-name: bge-base-zh
+
+      # 向量维度(必须与模型对应)
+      # bge-base-zh/m3e-base/multilingual-e5-base: 768
+      # text2vec-large-chinese/e5-large-v2: 1024
+      dimension: 768
+
+      # 需要自动向量化的文本字段名
+      # 插入文档时,该字段的文本会自动转换为向量
+      text-field: content
+
+      # 向量字段名
+      # 自动生成的向量会存储在该字段
+      vector-field: vector
+
+      # HNSW索引参数 - M值
+      # 每个节点的最大连接数,影响召回率和索引大小
+      # 建议范围: 8-64,默认16
+      hnsw-m: 16
+
+      # HNSW索引参数 - efConstruction值
+      # 构建索引时的动态候选列表大小
+      # 建议范围: 100-500,默认200
+      hnsw-ef-construction: 200
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.tencent.tcvectordb: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
