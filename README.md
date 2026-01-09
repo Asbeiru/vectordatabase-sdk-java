@@ -36,7 +36,10 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
 
 #### Spring Boot Integration
 
-If you are using this SDK in a Spring Boot project, please refer to [Spring Boot Integration Guide](./SPRING_BOOT_INTEGRATION.md) for dependency configuration and common troubleshooting.
+If you are using this SDK in a Spring Boot project:
+
+- **Quick Fix** (dependency conflicts): [QUICK_FIX.md](./QUICK_FIX.md) - One-minute solution for common errors
+- **Complete Guide**: [Spring Boot Integration Guide](./SPRING_BOOT_INTEGRATION.md) - Full documentation and troubleshooting
 
 ### Examples
 
