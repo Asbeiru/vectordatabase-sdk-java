@@ -1,5 +1,7 @@
 # Spring Boot 集成指南
 
+> **💡 想了解为什么会出现依赖问题？** 请参阅 [依赖问题技术分析](./DEPENDENCY_ANALYSIS.md)，详细解释了这是 SDK 的 Bug 还是项目配置问题。
+
 ## 常见问题：NoClassDefFoundError: com/google/protobuf/GeneratedMessageV3
 
 ### 问题描述
