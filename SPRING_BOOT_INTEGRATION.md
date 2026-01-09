@@ -2,9 +2,67 @@
 
 > **💡 想了解为什么会出现依赖问题？** 请参阅 [依赖问题技术分析](./DEPENDENCY_ANALYSIS.md)，详细解释了这是 SDK 的 Bug 还是项目配置问题。
 
-## 常见问题：NoClassDefFoundError: com/google/protobuf/GeneratedMessageV3
+## 快速开始：推荐的完整依赖配置
 
-### 问题描述
+为了避免各种依赖冲突，推荐在 `pom.xml` 中按以下顺序声明依赖：
+
+```xml
+<dependencies>
+    <!-- 1. 显式声明基础库版本，避免冲突 -->
+    <dependency>
+        <groupId>com.squareup.okio</groupId>
+        <artifactId>okio</artifactId>
+        <version>3.9.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>4.12.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>4.28.3</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java-util</artifactId>
+        <version>4.28.3</version>
+    </dependency>
+
+    <!-- 2. VectorDB SDK -->
+    <dependency>
+        <groupId>com.tencent.tcvectordb</groupId>
+        <artifactId>vectordatabase-sdk-java</artifactId>
+        <version>2.6.0</version>
+    </dependency>
+
+    <!-- 3. 您的其他依赖 -->
+    <!-- ... -->
+</dependencies>
+```
+
+**Gradle 用户**：
+
+```gradle
+dependencies {
+    implementation 'com.squareup.okio:okio:3.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.google.protobuf:protobuf-java:4.28.3'
+    implementation 'com.google.protobuf:protobuf-java-util:4.28.3'
+    implementation 'com.tencent.tcvectordb:vectordatabase-sdk-java:2.6.0'
+}
+```
+
+> **⚠️ 重要**：这些基础库依赖必须放在 VectorDB SDK 之前声明，以确保使用正确的版本。
+
+---
+
+## 常见问题
+
+### 问题 1：NoClassDefFoundError: com/google/protobuf/GeneratedMessageV3
+
+#### 问题描述
 
 在 Spring Boot 项目中使用 VectorDB SDK 时，可能会遇到以下错误：
 
@@ -13,7 +71,7 @@ java.lang.NoClassDefFoundError: com/google/protobuf/GeneratedMessageV3
 Caused by: java.lang.ClassNotFoundException: com.google.protobuf.GeneratedMessageV3
 ```
 
-### 根本原因
+#### 根本原因
 
 此错误由以下原因之一引起：
 
@@ -119,6 +177,131 @@ mvn dependency:tree -Dincludes=com.google.protobuf:protobuf-java
     <grpc.version>1.61.1</grpc.version>
 </properties>
 ```
+
+---
+
+### 问题 2：NoSuchMethodError: okio.BufferedSource.getBuffer()
+
+#### 问题描述
+
+解决 protobuf 依赖问题后，可能会遇到新的错误：
+
+```
+io.grpc.StatusRuntimeException: INTERNAL: error in frame handler
+Caused by: java.lang.NoSuchMethodError: okio.BufferedSource.getBuffer()Lokio/Buffer;
+    at io.grpc.okhttp.OkHttpClientTransport$ClientFrameHandler.data(OkHttpClientTransport.java:1158)
+```
+
+#### 根本原因
+
+这是 **okio 库的版本冲突**：
+
+1. SDK 使用的 `okhttp 4.9.2` 和 `grpc-okhttp 1.61.1` 需要 **okio 2.8.0+** 版本
+2. 您的项目中可能存在其他依赖引入了**旧版本 okio（1.x）**
+3. `BufferedSource.getBuffer()` 方法在不同版本的 okio 中签名不同
+
+常见冲突来源：
+- 旧版本的 okhttp3（3.x）依赖 okio 1.x
+- 某些 Android 或其他库依赖旧版本 okio
+
+#### 解决方案：显式声明 okio 和 okhttp 版本
+
+在您的 `pom.xml` 中添加（在所有其他依赖之前）：
+
+```xml
+<dependencies>
+    <!-- 显式声明 okio 版本 -->
+    <dependency>
+        <groupId>com.squareup.okio</groupId>
+        <artifactId>okio</artifactId>
+        <version>3.9.0</version>
+    </dependency>
+
+    <!-- 显式声明 okhttp 版本 -->
+    <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>4.12.0</version>
+    </dependency>
+
+    <!-- 显式声明 protobuf 版本 -->
+    <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>4.28.3</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java-util</artifactId>
+        <version>4.28.3</version>
+    </dependency>
+
+    <!-- VectorDB SDK -->
+    <dependency>
+        <groupId>com.tencent.tcvectordb</groupId>
+        <artifactId>vectordatabase-sdk-java</artifactId>
+        <version>2.6.0</version>
+    </dependency>
+</dependencies>
+```
+
+如果使用 Gradle：
+
+```gradle
+dependencies {
+    // 显式声明版本
+    implementation 'com.squareup.okio:okio:3.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.google.protobuf:protobuf-java:4.28.3'
+    implementation 'com.google.protobuf:protobuf-java-util:4.28.3'
+
+    // VectorDB SDK
+    implementation 'com.tencent.tcvectordb:vectordatabase-sdk-java:2.6.0'
+}
+```
+
+#### 排查 okio 冲突
+
+使用 Maven 命令检查 okio 依赖树：
+
+```bash
+mvn dependency:tree -Dincludes=com.squareup.okio:okio
+```
+
+或者使用 Gradle：
+
+```bash
+./gradlew dependencies --configuration runtimeClasspath | grep okio
+```
+
+查找输出中的冲突信息，例如：
+
+```
+[INFO] |  +- com.squareup.okio:okio:jar:3.9.0:compile
+[INFO] |  +- (com.squareup.okio:okio:jar:3.9.0:compile - omitted for conflict with 1.17.2)
+```
+
+如果发现其他依赖引入了旧版本 okio，可以排除它：
+
+```xml
+<dependency>
+    <groupId>some.other</groupId>
+    <artifactId>dependency</artifactId>
+    <version>x.y.z</version>
+    <exclusions>
+        <exclusion>
+            <groupId>com.squareup.okio</groupId>
+            <artifactId>okio</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+---
 
 ### Spring Boot 配置示例
 

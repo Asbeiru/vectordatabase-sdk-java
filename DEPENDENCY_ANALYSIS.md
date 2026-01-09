@@ -248,15 +248,79 @@ mvn dependency:tree -Dverbose | grep protobuf
 
 **结果**：仍然不是 4.28.3 ❌
 
+## 其他常见依赖冲突
+
+### okio 库冲突
+
+如果您解决了 protobuf 问题后，遇到 `NoSuchMethodError: okio.BufferedSource.getBuffer()`，这是另一个版本冲突：
+
+**问题原因**：
+- SDK 的 okhttp 4.9.2 和 grpc-okhttp 1.61.1 需要 okio 2.8.0+
+- 项目中其他依赖可能引入了 okio 1.x 版本
+
+**解决方案**：显式声明 okio 和 okhttp 版本：
+
+```xml
+<dependency>
+    <groupId>com.squareup.okio</groupId>
+    <artifactId>okio</artifactId>
+    <version>3.9.0</version>
+</dependency>
+<dependency>
+    <groupId>com.squareup.okhttp3</groupId>
+    <artifactId>okhttp</artifactId>
+    <version>4.12.0</version>
+</dependency>
+```
+
+详细解决步骤请参阅 [Spring Boot 集成指南](./SPRING_BOOT_INTEGRATION.md)。
+
+## 完整的推荐配置
+
+为了避免所有依赖冲突，推荐的完整依赖配置：
+
+```xml
+<dependencies>
+    <!-- 显式声明基础库版本 -->
+    <dependency>
+        <groupId>com.squareup.okio</groupId>
+        <artifactId>okio</artifactId>
+        <version>3.9.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.squareup.okhttp3</groupId>
+        <artifactId>okhttp</artifactId>
+        <version>4.12.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>4.28.3</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java-util</artifactId>
+        <version>4.28.3</version>
+    </dependency>
+
+    <!-- VectorDB SDK -->
+    <dependency>
+        <groupId>com.tencent.tcvectordb</groupId>
+        <artifactId>vectordatabase-sdk-java</artifactId>
+        <version>2.6.0</version>
+    </dependency>
+</dependencies>
+```
+
 ## 总结
 
 | 问题 | 答案 |
 |------|------|
 | 这是 SDK 的 Bug 吗？ | **否**，SDK 已正确声明依赖 |
 | 这是我项目的问题吗？ | **是**，由于依赖冲突导致 |
-| 为什么必须引入这些包？ | SDK 使用 gRPC，**必须依赖** protobuf |
+| 为什么必须引入这些包？ | SDK 使用 gRPC，**必须依赖** protobuf、okio、okhttp |
 | SDK 应该修复吗？ | SDK 无需修改，**需要改进文档**（已完成） |
-| 最佳解决方案？ | **显式声明 protobuf 依赖** |
+| 最佳解决方案？ | **显式声明所有基础库依赖** |
 
 ## 检查清单
 
