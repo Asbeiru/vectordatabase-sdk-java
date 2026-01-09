@@ -2,7 +2,7 @@ package com.tencent.tcvectordb.springboot.service;
 
 import com.tencent.tcvectordb.client.VectorDBClient;
 import com.tencent.tcvectordb.model.Document;
-import com.tencent.tcvectordb.model.param.collection.HNSWSearchParams;
+import com.tencent.tcvectordb.model.param.dml.HNSWSearchParams;
 import com.tencent.tcvectordb.model.param.dml.Filter;
 import com.tencent.tcvectordb.model.param.dml.SearchByEmbeddingItemsParam;
 import com.tencent.tcvectordb.model.param.entity.SearchRes;
@@ -137,7 +137,7 @@ public class SearchService {
         for (Document doc : documents) {
             try {
                 // 获取文档字段
-                Map<String, Object> fields = doc.getDocFields();
+                Map<String, Object> fields = doc.getDocKeyValue();
 
                 DocumentDTO dto = DocumentDTO.builder()
                         .id(doc.getId())
