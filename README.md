@@ -34,6 +34,10 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
         compile 'com.tencent.tcvectordb:vectordatabase-sdk-java:2.6.0'
         ```
 
+#### Spring Boot Integration
+
+If you are using this SDK in a Spring Boot project, please refer to [Spring Boot Integration Guide](./SPRING_BOOT_INTEGRATION.md) for dependency configuration and common troubleshooting.
+
 ### Examples
 
 Please refer to [examples](./tcvectordb/src/main/java/com/tencent/tcvectordb/examples) folder for Java SDK examples.
